@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f6f8">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard" aria-labelledby="page-title">
+      <header class="page-header">
+        <p class="eyebrow">Team overview</p>
+        <h1 id="page-title">Project Pulse</h1>
+        <p class="page-description">A clear view of what’s moving, who’s driving it, and where the team needs to focus.</p>
+      </header>
+
+      <section class="projects-section" aria-labelledby="projects-heading" aria-busy="true">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Current work</p>
+            <h2 id="projects-heading">Projects <span class="project-count" id="project-count"></span></h2>
+          </div>
+          <p class="section-caption">Status and latest team updates</p>
+        </div>
+
+        <p class="state-message" id="loading-state" role="status">Loading projects…</p>
+        <p class="state-message empty-state" id="empty-state" hidden>No projects to show yet. Check back when work has been added.</p>
+        <p class="state-message error-state" id="error-state" role="alert" hidden>Projects couldn’t be loaded. Please try again later.</p>
+        <div class="project-grid" id="project-grid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script>
+      const section = document.querySelector(".projects-section");
+      const loadingState = document.getElementById("loading-state");
+      const emptyState = document.getElementById("empty-state");
+      const errorState = document.getElementById("error-state");
+      const projectGrid = document.getElementById("project-grid");
+      const projectCount = document.getElementById("project-count");
+
+      function setState(state) {
+        loadingState.hidden = state !== "loading";
+        emptyState.hidden = state !== "empty";
+        errorState.hidden = state !== "error";
+        section.setAttribute("aria-busy", state === "loading" ? "true" : "false");
+      }
+
+      function displayValue(value) {
+        return typeof value === "string" && value.trim() ? value.trim() : "Not provided";
+      }
+
+      function makeBadge(label, category, value) {
+        const badge = document.createElement("span");
+        const safeClass = typeof value === "string"
+          ? value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+          : "";
+        badge.className = `badge badge-${category}${safeClass ? ` ${category}-${safeClass}` : ""}`;
+        badge.textContent = `${label}: ${displayValue(value)}`;
+        return badge;
+      }
+
+      function makeMetadata(label, value) {
+        const item = document.createElement("div");
+        item.className = "metadata-item";
+        const heading = document.createElement("dt");
+        heading.textContent = label;
+        const detail = document.createElement("dd");
+        detail.textContent = displayValue(value);
+        item.append(heading, detail);
+        return item;
+      }
+
+      function makeProjectCard(project) {
+        const card = document.createElement("article");
+        card.className = "project-card";
+
+        const topLine = document.createElement("div");
+        topLine.className = "card-topline";
+        topLine.append(
+          makeBadge("Status", "status", project.status),
+          makeBadge("Priority", "priority", project.priority)
+        );
+
+        const title = document.createElement("h3");
+        title.className = "project-name";
+        title.textContent = displayValue(project.name);
+        card.append(topLine, title);
+
+        if (typeof project.summary === "string" && project.summary.trim()) {
+          const summary = document.createElement("p");
+          summary.className = "project-summary";
+          summary.textContent = project.summary.trim();
+          card.append(summary);
+        }
+
+        const metadata = document.createElement("dl");
+        metadata.className = "project-metadata";
+        metadata.append(
+          makeMetadata("Owner", project.owner),
+          makeMetadata("Recent activity", project.recentActivity)
+        );
+        card.append(metadata);
+        return card;
+      }
+
+      async function loadProjects() {
+        setState("loading");
+        try {
+          const response = await fetch("project-data.json");
+          if (!response.ok) {
+            throw new Error(`Project data request failed (${response.status}).`);
+          }
+
+          const data = await response.json();
+          if (!data || !Array.isArray(data.projects)) {
+            throw new Error("Project data must contain a top-level projects array.");
+          }
+
+          projectGrid.replaceChildren();
+          projectCount.textContent = `· ${data.projects.length}`;
+          if (data.projects.length === 0) {
+            setState("empty");
+            return;
+          }
+
+          const cards = data.projects.map((project) => {
+            if (!project || typeof project !== "object" || Array.isArray(project)) {
+              throw new Error("Each project must be an object.");
+            }
+            return makeProjectCard(project);
+          });
+          projectGrid.replaceChildren(...cards);
+          setState("ready");
+        } catch (error) {
+          projectGrid.replaceChildren();
+          projectCount.textContent = "";
+          errorState.textContent = error instanceof SyntaxError
+            ? "Project data contains invalid JSON. Please check the data file."
+            : "Projects couldn’t be loaded. Please check the data file and try again.";
+          setState("error");
+        }
+      }
+
+      loadProjects();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "projects": [
+    {
+      "name": "Customer onboarding refresh",
+      "owner": "Mona Patel",
+      "status": "On track",
+      "recentActivity": "Updated the welcome flow and shared the latest prototype · Oct 22",
+      "priority": "High",
+      "summary": "Simplify the first-week experience so new customers reach value sooner."
+    },
+    {
+      "name": "Analytics workspace",
+      "owner": "Jordan Lee",
+      "status": "At risk",
+      "recentActivity": "Data review surfaced two gaps in the event pipeline · Oct 21",
+      "priority": "High",
+      "summary": "Bring the team's most-used product metrics together in one reliable workspace."
+    },
+    {
+      "name": "Mobile accessibility improvements",
+      "owner": "Sam Rivera",
+      "status": "On track",
+      "recentActivity": "Keyboard navigation checks passed on the account screens · Oct 23",
+      "priority": "Medium",
+      "summary": "Improve screen-reader support, focus behavior, and contrast across mobile."
+    },
+    {
+      "name": "Billing migration",
+      "owner": "Alex Chen",
+      "status": "Blocked",
+      "recentActivity": "Waiting on the partner sandbox credentials to resume integration · Oct 20",
+      "priority": "High",
+      "summary": "Move subscription billing to the new platform with a smooth customer transition."
+    },
+    {
+      "name": "Help center content audit",
+      "owner": "Taylor Brooks",
+      "status": "Complete",
+      "recentActivity": "Final article review completed and the updated guides were published · Oct 18",
+      "priority": "Low",
+      "summary": "Refresh key support articles and remove outdated guidance."
+    }
+  ]
+}
